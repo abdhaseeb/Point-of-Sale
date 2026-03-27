@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 
 import productRoutes from "./src/routes/productRoutes.js"
+import cartRoutes from "./src/routes/cartRoutes.js"
 
 dotenv.config();
 const app = express();
@@ -21,3 +22,4 @@ app.listen(PORT, () => {
 });
 
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
