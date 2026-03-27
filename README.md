@@ -16,3 +16,5 @@
 * Good DB design
 * Working features
 * Ability to explain decisions
+
+Ayooo
