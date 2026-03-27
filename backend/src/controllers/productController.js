@@ -28,11 +28,6 @@ export const fetchProduct = (req, res) => {
 
 
 /**
-Why this file is important
-
-Without controllers:
-
-Routes become messy
 Logic gets duplicated
 Hard to maintain
 

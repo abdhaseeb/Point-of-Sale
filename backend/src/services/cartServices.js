@@ -1,4 +1,4 @@
-import { getCart } from "../models/cartModel";
+import { getCart } from "../models/cartModel.js";
 
 export const calculateTotal = () => {
     const cart = getCart();

@@ -15,16 +15,15 @@ export const getProductById = (id) => {
     return products.find( (prod) => prod.id === id);
 };
 
-/**
-If you didn’t have this file:
+export const updatedProductStock = (productId, quantity) => {
+    const product = products.find(prod => prod.id === productId);
 
-Every part of your app would directly access products
-Logic would be duplicated
-Hard to maintain
+    if(!product) return null;
 
-Instead, this file:
-✅ Centralizes logic
-✅ Keeps things clean
-✅ Makes future upgrades easier
+    if(product.stock < quantity){
+        return {error: "Insufficient stock"};
+    }
 
- */
+    product.stock -= quantity;
+    return product;
+}
