@@ -1,17 +1,35 @@
-import {randomUUID} from "crypto";
-
-let orders = [];
+import prisma from "../config/prisma.js";
 
 //orderData : items and totalPrice of cart
-export const createOrder = (orderData) => {
-    const newOrder = {
-        id : randomUUID(),
-        ...orderData,
-        createdAt : new Date(),
-    };
-
-    orders.push(newOrder);
-    return newOrder;
+export const createOrder = async ({userId, items, total}) => {
+    await prisma.order.create({
+        data:{
+            userId,
+            total, 
+            items: {
+                create: items.map( item => ({
+                    //productId: item.productId,
+                    productId: item.product.id,
+                    quantity: item.quantity,
+                    price: item.product.price, //Order must store price at purchase time (not future price)
+                })),
+            },
+        },
+        include: {
+            items: true,
+        },
+    });
 };
 
-export const getAllOrders = () => orders;
+export const getAllOrders = async () => {
+    return await prisma.order.findMany({
+        include: {
+            items: true,
+        }
+    });
+    /**
+    👉 So response contains:
+        Order
+        Its items 
+    */
+}

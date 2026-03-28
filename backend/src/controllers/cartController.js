@@ -1,31 +1,56 @@
-import { getCart, addToCart, removeFromCart, clearCart } from "../models/cartModel.js";
+//import { getUserCart, addToCart, removeFromCart, clearCart } from "../models/cartModel.js";
+//import { getProductById } from "../models/productModel.js";
 
-import { getProductById } from "../models/productModel.js";
+import * as cartModel from "../models/cartModel.js";
 import { calculateTotal } from "../services/cartServices.js";
 
-export const fetchCart = (req, res) => {
-    const cart = getCart();
-    const total = calculateTotal();
+const userId = '12345';
 
-    res.json({...cart, total});
-}
+export const fetchCart = async (req, res) => {
+    try{
+        
+        //const userId = req.user.id;
+        const cart = await cartModel.getUserCart(userId);
+        const total = await calculateTotal(userId);
 
-export const addItemToCart = (req, res) => {
-    const {productId, quantity} = req.body;
-    const product = getProductById(productId)
-
-    if(!product){
-        return res.status(400).json({message: "Product not found"});
+        res.json({cart, total});
+    }catch(err){
+        res.status(500).json({ error: err.message});
     }
-
-    const cart = addToCart(product, quantity || 1);
-    
-    res.json(cart);
 };
 
-export const removeItemFromCart = (req, res) => {
-    const {productId} = req.body;
-    const cart = removeFromCart(productId);
+// Add to cart
+export const addItemToCart = async (req, res) => {
+    try{    
+        //const userId = req.user.id;
+        const {productId, quantity} = req.body;
 
-    res.json(cart);
+        const cart = await cartModel.addToCart(userId, productId, quantity);
+        res.json(cart);
+    }catch(err){
+        res.status(500).json({error: err.message});
+    }
+};
+
+//Remove from cart
+export const removeItemFromCart = async (req, res) => {
+    try{
+        //const userId = req.user.id;
+        const {productId} = req.body;
+        const cart = await cartModel.removeFromCart(userId, productId);
+        res.json(cart);
+    }catch(err){
+        res.status(500).json({error: err.message});
+    }
+}
+
+//clearCart
+export const clearCart = async (req, res) => {
+    try{
+        //const userId = req.user.id;
+        const cart = await cartModel.clearCart(userId)
+        res.json(cart);
+    }catch(err){
+        res.status(500).json({error: err.message});
+    }
 }

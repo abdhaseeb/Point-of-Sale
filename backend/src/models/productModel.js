@@ -1,22 +1,27 @@
 //starting with in-memory storage first
 import { randomUUID } from "crypto";
+import prisma from "../config/prisma.js";
 
-let products = [];
-
-export const createProduct = (product) => {
-    const newProduct = { id : randomUUID(), ...product};
-    products.push(newProduct);
-    return newProduct;
+export const createProduct = async (data) => {
+    return await prisma.product.create({
+        data,
+    });
 };
 
-export const getAllProducts = () => products;
-
-export const getProductById = (id) => {
-    return products.find( (prod) => prod.id === id);
+export const getAllProducts = async () => {
+    return await prisma.product.findMany();
 };
 
-export const updatedProductStock = (productId, quantity) => {
-    const product = products.find(prod => prod.id === productId);
+export const getProductById = async (id) => {
+    return await prisma.product.findUnique({
+        where: {id},
+    })
+};
+
+export const updatedProductStock = async (productId, quantity) => {
+    const product = await prisma.product.findUnique({
+        where: {id: productId},
+    });
 
     if(!product) return null;
 
@@ -24,6 +29,8 @@ export const updatedProductStock = (productId, quantity) => {
         return {error: "Insufficient stock"};
     }
 
-    product.stock -= quantity;
-    return product;
-}
+    return await prisma.product.update({
+        where: {id: productId},
+        data: {stock: product.stock - quantity},
+    });
+};
