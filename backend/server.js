@@ -16,12 +16,12 @@ app.get("/", (request, response) => {
     response.send('PoS Backend Running');
 });
 
+app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/orders", orderRoutes)
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
     console.log(`Server Running on port ${PORT}`);
 });
-
-app.use("/api/products", productRoutes);
-app.use("/api/cart", cartRoutes);
-app.use("/api/orders", orderRoutes)

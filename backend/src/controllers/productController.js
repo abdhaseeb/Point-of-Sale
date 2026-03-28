@@ -1,29 +1,33 @@
-import { createProduct, getAllProducts, getProductById } from "../models/productModel.js";
+import * as productModel from "../models/productModel.js";
 
-export const addProduct = (req, res) => {
-    const {name, price, stock} = req.body;
-
-    if(!name || !price){
-        return res.status(400).json({ message: "Name and price required"});
+//create product
+export const createProduct = async (req, res) => {
+    try{
+        const product = await productModel.createProduct(req.body);
+        res.json(product);
+    }catch(err){
+        res.status(500).json({error: err.message});
     }
-
-    const product = createProduct({name, price, stock: stock || 0});
-
-    res.status(201).json(product);
 };
 
-export const fetchProducts = (req, res) => {
-    res.json(getAllProducts());
+export const getAllProducts = async (req, res) => {
+    try{
+        console.log("GET /api/products hit");
+        const products = await productModel.getAllProducts();
+        res.json(products);
+    }catch(err){
+        res.status(500).json({error: err.message});
+    }
 };
 
-export const fetchProduct = (req, res) => {
-    const product = getProductById(req.params.id);
-
-    if(!product){
-        return res.status(400).json({message : "Product not found!"});
+export const getProductById = async (req, res) => {
+    try{
+        const productId = req.params.id;
+        const product = await productModel.getProductById(productId)
+        res.json(product);
+    }catch(err){
+        res.status(500).json({error: err.message});
     }
-
-    res.json(product);
 };
 
 

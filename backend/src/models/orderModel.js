@@ -2,7 +2,7 @@ import prisma from "../config/prisma.js";
 
 //orderData : items and totalPrice of cart
 export const createOrder = async ({userId, items, total}) => {
-    await prisma.order.create({
+    const order = await prisma.order.create({
         data:{
             userId,
             total, 
@@ -19,6 +19,8 @@ export const createOrder = async ({userId, items, total}) => {
             items: true,
         },
     });
+
+    return order;
 };
 
 export const getAllOrders = async () => {

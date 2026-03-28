@@ -1,5 +1,4 @@
 //starting with in-memory storage first
-import { randomUUID } from "crypto";
 import prisma from "../config/prisma.js";
 
 export const createProduct = async (data) => {
