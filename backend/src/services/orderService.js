@@ -1,7 +1,16 @@
 //business logic
 import { createOrder } from "../models/orderModel.js";
 import { updatedProductStock } from "../models/productModel.js";
+import { getOrdersByUserId, getAllOrders } from "../models/orderModel.js";
 import * as cartService from './cartServices.js';
+
+export const getOrdersByUserIdService = async (userId) => {
+    return await getOrdersByUserId(userId);
+}
+
+export const getAllOrdersService = async () => {
+    return await getAllOrders();
+}
 
 export const checkout = async (userId) => {
     //Get cart (already includes total)

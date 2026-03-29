@@ -1,4 +1,4 @@
-import {checkout} from "../services/orderService.js";
+import {checkout, getOrdersByUserIdService} from "../services/orderService.js";
 import { getAllOrders } from "../models/orderModel.js";
 
 export const checkoutOrder = async (req, res) => {
@@ -22,6 +22,17 @@ export const fetchOrders = async (req, res) => {
         res.json(orders);
     }catch(err){
         res.status(500).json({error: err.message})
+    }
+};
+
+export const getMyOrders = async (req, res) => {
+    try{
+        const userId = req.user.id;
+
+        const orders = await getOrdersByUserIdService(userId);
+        res.json(orders);
+    }catch(err){
+        res.status(500).json({error: err.message });
     }
 };
 
