@@ -9,8 +9,8 @@ export const registerUser = async (name, email, password) => {
     const existingUser = await prisma.user.findUnique({
         where : {email}
     })
-
-    if(!existingUser){
+    console.log("DEBUG: existing user -> ", existingUser);
+    if(existingUser){
         throw new Error("User already exists");
     }
 
