@@ -42,7 +42,6 @@ export const addToCart = async (userId, productId, quantity = 1) => {
             include: { product: true},
         });
     }
-    return await getUserCart(userId);
 };
 
 // Remove item from cart
@@ -53,7 +52,7 @@ export const removeFromCart = async (userId, productId) => {
         where: {cartId : cart.id, productId},
     })
 
-    return await getUserCart(userId);
+    return;
 }
 
 //Clear cart
@@ -64,5 +63,5 @@ export const clearCart = async(userId) => {
         where: { cartId: cart.id},
     });
 
-    return await getUserCart(userId);
+    return;
 }

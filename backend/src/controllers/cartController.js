@@ -1,8 +1,8 @@
 //import { getUserCart, addToCart, removeFromCart, clearCart } from "../models/cartModel.js";
 //import { getProductById } from "../models/productModel.js";
+//import * as cartModel from "../models/cartModel.js";
 
-import * as cartModel from "../models/cartModel.js";
-import { calculateTotal } from "../services/cartServices.js";
+import * as cartService from "../services/cartServices.js";
 
 const userId = '12345';
 
@@ -10,10 +10,8 @@ export const fetchCart = async (req, res) => {
     try{
         
         //const userId = req.user.id;
-        const cart = await cartModel.getUserCart(userId);
-        const total = await calculateTotal(userId);
-
-        res.json({cart, total});
+        const cart = await cartService.getCartService(userId);
+        res.json(cart);
     }catch(err){
         res.status(500).json({ error: err.message});
     }
@@ -24,8 +22,7 @@ export const addItemToCart = async (req, res) => {
     try{    
         //const userId = req.user.id;
         const {productId, quantity} = req.body;
-
-        const cart = await cartModel.addToCart(userId, productId, quantity);
+        const cart = await cartService.addToCartService(userId, productId, quantity);
         res.json(cart);
     }catch(err){
         res.status(500).json({error: err.message});
@@ -37,7 +34,7 @@ export const removeItemFromCart = async (req, res) => {
     try{
         //const userId = req.user.id;
         const {productId} = req.body;
-        const cart = await cartModel.removeFromCart(userId, productId);
+        const cart = await cartService.removeFromCartService(userId, productId);
         res.json(cart);
     }catch(err){
         res.status(500).json({error: err.message});
@@ -48,7 +45,7 @@ export const removeItemFromCart = async (req, res) => {
 export const clearCart = async (req, res) => {
     try{
         //const userId = req.user.id;
-        const cart = await cartModel.clearCart(userId)
+        const cart = await cartService.clearCartService(userId)
         res.json(cart);
     }catch(err){
         res.status(500).json({error: err.message});
