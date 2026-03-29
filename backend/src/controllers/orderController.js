@@ -3,7 +3,7 @@ import { getAllOrders } from "../models/orderModel.js";
 
 export const checkoutOrder = async (req, res) => {
     try{
-        const userId = '12345';
+        const userId = req.user.id;
         const result = await checkout(userId);
         
         if(result.error){
