@@ -60,8 +60,10 @@ model Cart{
 model CartItem{
   id  String @id  @default(uuid())
   quantity  Int
+  price Float
   productId String
   product Product @relation(fields:[productId], references:[id])
   cartId  String
+
   cart Cart @relation(fields: [cartId], references:[id])
 }

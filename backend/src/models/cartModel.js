@@ -26,22 +26,16 @@ export const getUserCart = async (userId) => {
 export const addToCart = async (userId, productId, quantity = 1) => {
     const cart = await getUserCart(userId);
 
-    const  existingItem = await prisma.cartItem.findFirst({
-        where: {cartId: cart.id, productId},
-    });
+    const product = await prisma.product.findUnique({
+        where : {productId},
+    })
+    if(!product){
+        throw new Error("Product not found");
+    }
 
-    if(existingItem){
-        await prisma.cartItem.update({
-            where: {id: existingItem.id},
-            data: { quantity: existingItem.quantity + quantity },
-        });
-    }
-    else{   
-        await prisma.cartItem.create({
-            data: { cartId: cart.id, productId, quantity},
-            include: { product: true},
-        });
-    }
+    await prisma.cartItem.create({
+        data: { cartId: cart.id, productId, quantity, price : product.price},
+    });
 };
 
 // Remove item from cart

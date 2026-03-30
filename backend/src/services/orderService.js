@@ -14,18 +14,71 @@ export const getAllOrdersService = async () => {
 
 export const checkout = async (userId) => {
     //Get cart (already includes total)
-    const cart = await cartService.getCartService(userId);
+    
+    return await prisma.$transaction(async (tx) => {
+        //fetch and validate cart
+        const cart = await tx.cart.findFirst({
+            where : { userId },
+            include: { items: true }, //price is inside cartItems
+        });
+        if(!cart || cart.items.length === 0){
+            throw new Error("Cart is empty");
+        }
+        
+        //for each product in the cart
+        for(const item of cart.items){
+            const result = await tx.product.updateMany({
+                where : { 
+                    id : item.productId, // where id = item.productId
+                    stock: { gte : item.quantity }, // where stock >= quantity
+                },
+                data : { stock : { decrement: item.quantity, }, },
+            });
+            
+            if(result.count === 0){
+                throw new Error(`Insufficient stock for product ${item.productId}`);
+            }
+        }
+        
+        //calculating totalAmount
+        const total = cart.items.reduce((sum, item) => {
+            return sum + (item.quantity * item.price);
+        }, 0);
 
-    // DEBUG START
-    // console.log("FULL CART:", cart);
-    // console.log("CART ITEMS:", cart.items);
-    // DEBUG END
+        //creating order
+        const order = await tx.order.create({
+            data: { userId, total },
+        });
+        
+        //creating order items
+        await tx.orderItem.createMany({
+            data : cart.items.map( (item) => ({
+                orderId: order.id,
+                productId : item.productId, 
+                quantity: item.quantity, 
+                price: item.price,
+            })),
+        });
+        
+        //clear cart
+        await tx.cartItem.deleteMany({
+            where:{
+                cartId : cart.id,
+            }
+        })
+        
+        return order;
+    });
+};
+
+/*
+export const checkout = async (userId) => {
+    const cart = await cartService.getCartService(userId);
 
     if(!cart.items.length){
         return {error: "Cart is empty"};
     }
 
-    //1. validate and update stock
     for(let item of cart.items){
         if (!item.product) {
             return { error: "Product data missing in the cart" };
@@ -42,25 +95,22 @@ export const checkout = async (userId) => {
     }
 
     //2. use the total from cartService 
-    //console.log("STEP 2: Calculating total...");
     const totalPrice = cart.total;
-    //console.log("TOTAL:", totalPrice);
+    
 
 
     //3. Create Order
-    //console.log("STEP 3: Creating order...");
     const order = await createOrder({
         userId, 
         items : cart.items,
         total: totalPrice,
     });
-    // console.log("ORDER CREATED:", order);
 
 
     //4. Clear Cart as order is complete
-    // console.log("STEP 4: Clearing cart...");
     await cartService.clearCartService(userId);
     // console.log("CART CLEARED");
 
     return order;
 };
+*/

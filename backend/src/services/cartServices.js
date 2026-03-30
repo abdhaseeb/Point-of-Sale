@@ -14,7 +14,7 @@ export const getCartService = async (userId) => {
     const cart = await cartModel.getUserCart(userId);
 
     const total = cart.items.reduce((sum, item) => {
-        return sum + item.quantity * item.product.price;
+        return sum + (item.quantity * item.price); // item is cartItem
     }, 0);
 
     return {
