@@ -3,8 +3,15 @@ import { getAllOrders } from "../models/orderModel.js";
 
 export const checkoutOrder = async (req, res) => {
     try{
+        console.log("checkoutOrder : CART CONTROLLER HIT");
         const userId = req.user.id;
-        const result = await checkout(userId);
+
+        const key = req.headers["idempotency-key"];
+        if(!key){
+            return res.status(400).json({error: "Idempotency-Key header required"});
+        }
+
+        const result = await checkout(userId, key);
         res.json(result);
     }catch(err){
         res.status(500).json({error: err.message});
@@ -22,6 +29,7 @@ export const fetchOrders = async (req, res) => {
 
 export const getMyOrders = async (req, res) => {
     try{
+        console.log("getMyOrders: CART CONTROLLER HIT");
         const userId = req.user.id;
 
         const orders = await getOrdersByUserIdService(userId);

@@ -4,10 +4,9 @@
 
 import * as cartService from "../services/cartServices.js";
 
-//const userId = '12345';
-
 export const fetchCart = async (req, res) => {
     try{      
+        console.log("CART CONTROLLER HIT");
         const userId = req.user.id;
         const cart = await cartService.getCartService(userId);
         res.json(cart);

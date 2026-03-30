@@ -27,15 +27,31 @@ export const addToCart = async (userId, productId, quantity = 1) => {
     const cart = await getUserCart(userId);
 
     const product = await prisma.product.findUnique({
-        where : {productId},
+        where : {id: productId},
     })
     if(!product){
         throw new Error("Product not found");
     }
 
-    await prisma.cartItem.create({
-        data: { cartId: cart.id, productId, quantity, price : product.price},
+    //checking if the if the item we are adding already exists in cart
+    // if yes we can just increment the quantity
+    const existingCartItem = await prisma.cartItem.findFirst({
+        where : {  cartId: cart.id, 
+            productId,
+        },
     });
+
+    if(existingCartItem){
+        await prisma.cartItem.update({
+            where:{ id : existingCartItem.id},
+            data: { quantity : existingCartItem.quantity + quantity },
+        });
+    }
+    else{
+        await prisma.cartItem.create({
+            data: { cartId: cart.id, productId, quantity, price : product.price},
+        });
+    }
 };
 
 // Remove item from cart
