@@ -67,3 +67,11 @@ model CartItem{
 
   cart Cart @relation(fields: [cartId], references:[id])
 }
+
+model IdempotencyKey{
+  id  String @id @default(uuid())
+  key String  @unique
+  userId  String
+  orderId String?
+  createdAt DateTime @default(now())
+}
