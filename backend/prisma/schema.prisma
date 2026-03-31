@@ -35,7 +35,9 @@ model Order{
   status  String  @default("PENDING")
   userId  String
   user User @relation(fields: [userId], references: [id])
+  
   items OrderItem[]
+  payment Payment[]
 }
 
 model OrderItem {
@@ -73,5 +75,17 @@ model IdempotencyKey{
   key String  @unique
   userId  String
   orderId String?
+  createdAt DateTime @default(now())
+}
+
+model Payment{
+  id  String @id @default(uuid())
+  orderId String 
+  order Order @relation(fields:[orderId], references:[id])
+  
+  Amount  Float
+  status  String //PENDING, SUCCESS, FAILED
+  IdempotencyKey  String @unique
+  
   createdAt DateTime @default(now())
 }

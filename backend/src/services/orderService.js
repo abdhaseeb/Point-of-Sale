@@ -23,7 +23,7 @@ export const checkout = async (userId, idempotencyKey) => {
         if(existingOrder.orderId){
             return await prisma.order.findUnique({
                 where: { id : existingOrder.orderId},
-                include: { items: true},
+                include: { items: true, },
             });
         }else{
             throw new Error("Request already in progress");
@@ -71,7 +71,7 @@ export const checkout = async (userId, idempotencyKey) => {
 
             //creating order
             const order = await tx.order.create({
-                data: { userId, total },
+                data: { userId, total, status: "PENDING" },
             });
             
             //creating order items
@@ -119,6 +119,138 @@ export const checkout = async (userId, idempotencyKey) => {
         throw err;
     }
 };
+
+export const payOrderService = async (orderId, paymentKey) => {
+    // 1.Fetch order with items
+    const order = await prisma.order.findUnique({
+        where : {id : orderId},
+        include : { items : true},
+    })
+    if(!order){
+        throw new Error ("Order not found");
+    }
+
+    //2. Checking if paymentKey already exists (payment idempotency)
+    const existingPayment = await prisma.payment.findUnique({
+        where : { idempotencyKey : paymentKey },
+        include: { order : true },
+    });
+
+    if(existingPayment){
+        return  existingPayment.order; // above we include {order : true}
+        // await prisma.order.findUnique({
+        //     where: { id: existingPayment.orderId },
+        //     include: { items: true },
+        // });
+    }
+
+    //3. If already paid -> prevent new payment
+    if(order.status === "PAID"){
+        return order;
+    }
+
+    if(order.status === "FAILED"){
+        throw new Error("Order failed");
+    }
+
+    //4. Process payment (simulating success for now)
+    const paymentSuccess = true;
+
+    //5. Transaction for consistency
+    return await prisma.$transaction(async (tx) => {
+
+        //5.1 Create payment (PENDING)
+        const payment = await tx.payment.create({
+            data : {
+                orderId, 
+                amount : order.total,
+                status: "PENDING",
+                idempotencyKey: paymentKey,
+            },
+        });
+
+        //5.2 Atomic order update (PREVENT RACE CONDITION)
+        const updateResult = await tx.order.updateMany({
+            //only update when the status = PENDING, to avoid RACE Condition
+            // only 1 request can pay, another req tries to access the order, it'll see as paid and payment request stops
+            where : {
+                id: orderId, 
+                status : "PENDING"
+            },  
+            data : {
+                status : paymentSuccess ? "PAID" : "FAILED", 
+            },
+        });
+
+        //5.3 If another request aready processed payment ?
+        if(updateResult.count === 0){
+            //someone already made the payment
+            const latestOrder = await tx.order.findUnique({
+                where : { id: orderId },
+                include: { items: true }
+            });
+
+            return latestOrder;
+        }
+        
+        //5.4 HANDLE FAILURE
+        if(!paymentSuccess){
+            const freshOrder = await tx.order.findUnique({
+                where: {id: orderId},
+                include: { items: true },
+            });
+
+            //restore stock
+            for(const item of order.items){
+                await tx.product.update({
+                    where : { id: item.productId },
+                    data : { stock : {increment : item.quantity}, },
+                });
+            };
+            
+            // Mark order as FAILED
+            const failedOrder = await tx.order.update({
+                where : { id : orderId },
+                data: { status : "FAILED" },
+                include : { items :  true }, 
+            });
+            //if we need we can also return updatedPayment; const updatedPayment = await tx.payment.update(...)
+            await tx.payment.update({
+                where: { id: payment.id },
+                data : { status : "FAILED" },
+            });
+
+
+            return failedOrder;
+        }
+
+        //5.5 HANDLE SUCCESS FLOW : Update payment success
+        //if we need we can also return updatedPayment; const updatedPayment = await tx.payment.update(...)
+        await tx.payment.update({
+            where: { id: payment.id },
+            data: { status: "SUCCESS"} 
+        });
+
+        //5.5 Fetch updated Order
+        const updatedOrder = await tx.order.findUnique({
+            where: { id: orderId },
+            include: { items: true },
+        });
+
+        return updatedOrder;
+    });
+}
+
+
+
+/**
+ Interview Gold Line
+ If asked:
+ “How do you prevent double payment?”
+ You say:
+ “By using an atomic conditional update on order status (PENDING → PAID) and checking affected rows.”
+ 
+ */
 
 /*
 export const checkout = async (userId) => {
