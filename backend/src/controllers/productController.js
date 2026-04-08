@@ -30,6 +30,23 @@ export const getProductById = async (req, res) => {
     }
 };
 
+export const deleteProduct = async (req, res) => {
+    try{
+        const productId = req.params.id;
+        await productModel.deleteProduct(productId);
+        res.json({ message: "Product deleted successfully" });
+    }catch(err){
+        // Prisma throws P2003 when a foreign key constraint fails
+        // (e.g. product has existing OrderItems referencing it)
+        if(err.code === 'P2003'){
+            return res.status(409).json({
+                error: "Cannot delete a product that is referenced by existing orders."
+            });
+        }
+        res.status(500).json({error: err.message});
+    }
+};
+
 
 /**
 Logic gets duplicated

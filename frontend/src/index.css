@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-surface text-white font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-1;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-subtle rounded-full;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface-1 border border-border rounded-xl shadow-card;
+  }
+
+  .btn-primary {
+    @apply bg-accent hover:bg-accent-hover text-white font-medium px-4 py-2 rounded-lg transition-colors duration-150 text-sm;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-3 hover:bg-subtle text-white font-medium px-4 py-2 rounded-lg transition-colors duration-150 text-sm border border-border;
+  }
+
+  .btn-danger {
+    @apply bg-danger/10 hover:bg-danger/20 text-danger font-medium px-4 py-2 rounded-lg transition-colors duration-150 text-sm border border-danger/20;
+  }
+
+  .btn-success {
+    @apply bg-success/10 hover:bg-success/20 text-success font-medium px-4 py-2 rounded-lg transition-colors duration-150 text-sm border border-success/20;
+  }
+
+  .input {
+    @apply bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-muted focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-150 w-full;
+  }
+
+  .badge-pending {
+    @apply text-warning bg-warning/10 border border-warning/20 text-xs px-2 py-0.5 rounded-full font-mono;
+  }
+  .badge-paid {
+    @apply text-success bg-success/10 border border-success/20 text-xs px-2 py-0.5 rounded-full font-mono;
+  }
+  .badge-failed {
+    @apply text-danger bg-danger/10 border border-danger/20 text-xs px-2 py-0.5 rounded-full font-mono;
+  }
+  .badge-admin {
+    @apply text-accent bg-accent-muted border border-accent/20 text-xs px-2 py-0.5 rounded-full font-mono;
+  }
+  .badge-cashier {
+    @apply text-muted bg-surface-3 border border-border text-xs px-2 py-0.5 rounded-full font-mono;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted hover:text-white hover:bg-surface-2 transition-all duration-150 cursor-pointer;
+  }
+  .nav-link.active {
+    @apply text-white bg-surface-2 border border-border;
+  }
+}

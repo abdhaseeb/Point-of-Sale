@@ -17,6 +17,12 @@ export const getProductById = async (id) => {
     })
 };
 
+export const deleteProduct = async (id) => {
+    return await prisma.product.delete({
+        where: { id },
+    });
+};
+
 export const updatedProductStock = async (productId, quantity) => {
     const product = await prisma.product.findUnique({
         where: {id: productId},
