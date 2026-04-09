@@ -7,36 +7,58 @@ datasource db {
   url = env("DATABASE_URL")
 }
 
-model User{
-  id  String @id @default(uuid())
-  name  String
-  email String @unique
+// PHASE 1 CHANGE: Added phone and address fields.
+// A customer placing a remote order needs a delivery address
+// and phone number. Both are optional (?) so existing cashier/admin
+// users are completely unaffected.
+model User {
+  id       String  @id @default(uuid())
+  name     String
+  email    String  @unique
   password String
-  role String @default("cashier")
+  role     String  @default("cashier") // "admin" | "cashier" | "customer"
+  phone    String?
+  address  String?
 
-  orders  Order[]
-  cart Cart?
+  orders Order[]
+  cart   Cart?
 }
 
-model Product{
-  id  String  @id @default(uuid())
+model Product {
+  id    String @id @default(uuid())
   name  String
   price Float
   stock Int
 
-  orderItems  OrderItem[]
-  cartItems CartItem[]
+  orderItems OrderItem[]
+  cartItems  CartItem[]
 }
 
-model Order{
-  id  String  @id @default(uuid())
-  total Float
-  createdAt DateTime  @default(now())
-  status  String  @default("PENDING")
-  userId  String
-  user User @relation(fields: [userId], references: [id])
-  
-  items OrderItem[]
+// PHASE 1 CHANGE: Added deliveryType, deliveryAddress, paymentMethod.
+//
+// deliveryType:    "IN_STORE" (walk-in, existing flow unchanged)
+//                 "DELIVERY" (remote order, store delivers)
+//
+// deliveryAddress: Where to deliver. Null for IN_STORE orders.
+//
+// paymentMethod:  "CASH" | "UPI" | "CARD" (in-store)
+//                 "CASH_ON_DELIVERY" (remote, Phase 1)
+//
+// Status lifecycle:
+//   IN_STORE:  PENDING -> PAID
+//   DELIVERY:  PENDING -> CONFIRMED -> OUT_FOR_DELIVERY -> DELIVERED
+model Order {
+  id              String   @id @default(uuid())
+  total           Float
+  createdAt       DateTime @default(now())
+  status          String   @default("PENDING")
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  deliveryType    String   @default("IN_STORE")
+  deliveryAddress String?
+  paymentMethod   String   @default("CASH")
+
+  items   OrderItem[]
   payment Payment[]
 }
 
@@ -44,48 +66,43 @@ model OrderItem {
   id        String  @id @default(uuid())
   quantity  Int
   price     Float
-
   productId String
   product   Product @relation(fields: [productId], references: [id])
-
-  orderId String
-  order   Order @relation(fields: [orderId], references: [id])
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
 }
 
-model Cart{
-  id String @id @default(uuid())
-  userId String @unique
-  user  User @relation(fields: [userId], references:[id])
-  items CartItem[]
+model Cart {
+  id     String     @id @default(uuid())
+  userId String     @unique
+  user   User       @relation(fields: [userId], references: [id])
+  items  CartItem[]
 }
 
-model CartItem{
-  id  String @id  @default(uuid())
+model CartItem {
+  id        String  @id @default(uuid())
   quantity  Int
-  price Float
+  price     Float
   productId String
-  product Product @relation(fields:[productId], references:[id])
-  cartId  String
-
-  cart Cart @relation(fields: [cartId], references:[id])
+  product   Product @relation(fields: [productId], references: [id])
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id])
 }
 
-model IdempotencyKey{
-  id  String @id @default(uuid())
-  key String  @unique
-  userId  String
-  orderId String?
+model IdempotencyKey {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  userId    String
+  orderId   String?
   createdAt DateTime @default(now())
 }
 
-model Payment{
-  id  String @id @default(uuid())
-  orderId String 
-  order Order @relation(fields:[orderId], references:[id])
-  
-  Amount  Float
-  status  String //PENDING, SUCCESS, FAILED
-  IdempotencyKey  String @unique
-  
-  createdAt DateTime @default(now())
+model Payment {
+  id             String   @id @default(uuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id])
+  Amount         Float
+  status         String
+  IdempotencyKey String   @unique
+  createdAt      DateTime @default(now())
 }

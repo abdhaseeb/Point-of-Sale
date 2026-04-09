@@ -10,6 +10,7 @@ import DashboardPage from './pages/DashboardPage'
 import ProductsPage from './pages/ProductsPage'
 import CartPage from './pages/CartPage'
 import OrdersPage from './pages/OrdersPage'
+import DeliveryPage from './pages/DeliveryPage'
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/delivery" element={<DeliveryPage />} />
           </Route>
 
           {/* Default redirect */}

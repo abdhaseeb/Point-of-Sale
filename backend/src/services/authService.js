@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRECT || "secretkey";
 
 //Register
-export const registerUser = async (name, email, password) => {
+export const registerUser = async (name, email, password, role) => {
     const existingUser = await prisma.user.findUnique({
         where : {email}
     })
@@ -21,6 +21,7 @@ export const registerUser = async (name, email, password) => {
             name, 
             email, 
             password: hashedPassword,
+            role,
         },
     });
     return user;
